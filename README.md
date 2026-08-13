@@ -22,6 +22,7 @@ pip install -e ".[yaml]"  →  engine.wrap(dispatch, ctx)  →  一行接入，�
 - [策略文件完整参考](#策略文件完整参考)
 - [人工审批流](#人工审批流)
 - [审计日志](#审计日志)
+- [可视化控制台](#可视化控制台)
 - [集成指南](#集成指南)
 - [自定义检查器](#自定义检查器)
 - [安全边界与已知局限](#安全边界与已知局限)
@@ -69,6 +70,7 @@ Agent 与聊天机器人的本质区别在于它**会做事**：调工具、查�
 - **PII 脱敏**：邮箱、中国大陆手机号、身份证号、卡号，输出前自动替换为 `[REDACTED:type]`。
 - **运行预算**：单次运行总调用数、单工具调用数上限；被拒调用不消耗预算。
 - **全程审计**：每个最终决策（含放行）写 JSONL，超长字段截断防日志爆炸，内存尾部可查询供面板使用。
+- **嵌入式可视化控制台**：一行代码启动的 Web 控制台——实时大盘、审计检索与运行回放、在线审批、策略热更新、围栏测试台；纯标准库 + 单文件页面，完全离线可用，可选 Token 鉴权。
 - **fail-open / fail-closed 可配**：检查器自身崩溃时熔断还是放行，由策略决定，不写死。
 - **可插拔检查器**：内置五个检查器只是默认链，实现一个 `Checker` 即可接入模型型检测、外部 API 或业务私有规则。
 - **零强制依赖**：标准库实现，YAML 策略才需要 `pyyaml`；无网络调用、无常驻服务。
@@ -131,7 +133,8 @@ engine.reset_run(ctx.run_id)                          # 运行结束释放预算
 无需 LLM、无需网络，纯围栏行为演示：
 
 ```bash
-python examples/demo.py
+python examples/demo.py            # 命令行版：一次跑通所有拦截面
+python examples/console_demo.py    # 控制台版：启动 Web 控制台并持续生成模拟流量
 ```
 
 实际输出（节选）：
@@ -227,7 +230,37 @@ JSONL，一行一个最终决策（**含放行**——审计的意义在于完�
 | `flags` | 非阻断标记（flag 模式注入命中、fail-open 崩溃记录） |
 | `approval_id` | 审批关联 ID |
 
-`engine.audit.recent(n)` 返回内存尾部（默认留存 1000 条），适合做管理面板或对外 API，不必读文件。
+`engine.audit.recent(n)` 返回内存尾部（默认留存 2000 条），适合做管理面板或对外 API，不必读文件。
+
+## 可视化控制台
+
+![控制台总览](docs/console-overview.png)
+
+给安全团队和打单演示用的嵌入式 Web 控制台，两行代码随引擎启动：
+
+```python
+from agent_guardrails.console import GuardrailConsole
+
+console = GuardrailConsole(engine, host="127.0.0.1", port=8787, token="换成你的令牌")
+console.start()      # 后台线程；console.url → http://127.0.0.1:8787
+```
+
+**五个页签**：
+
+| 页签 | 内容 |
+|---|---|
+| **总览** | 实时大盘：总检查/放行/拦截/改写/转审批/活跃运行统计瓦片，近 30 分钟每分钟检查量（拦截高亮），动作分布，检查器命中排行，被拦工具 Top 10，引擎信息 |
+| **审计** | 实时流水：按阶段/动作/工具/run_id/全文过滤，增量追尾，点行展开完整 JSON，点 run_id 进入单次运行回放，一键导出 JSONL |
+| **审批** | 待审批队列（工具、参数、原因、等待时长），在线批准/拒绝，已处理历史；审批动作本身写入审计 |
+| **策略** | 当前生效策略的结构化视图（默认动作、黑白名单、细粒度规则表、预算、扫描开关），右侧编辑器支持校验与**热更新**（立即生效，变更留审计） |
+| **测试台** | 现场构造任意阶段的检查请求看判定结果，内置 9 个一键示例（危险 SQL、越域抓取、注入攻击、PII 输出…）；干跑模式，不污染真实审计/预算/审批 |
+
+**实现与安全边界**：
+
+- 纯 Python 标准库 HTTP 服务 + 单个自包含 HTML（内联样式脚本、系统字体、无 CDN），**断网/私有化环境可用**；明暗主题自适应。
+- 默认只绑 `127.0.0.1`；对外暴露时务必设置 `token`（支持 `Authorization: Bearer` / `X-Console-Token` / URL 参数三种携带方式），并建议放在反向代理后加 TLS。
+- 控制台是引擎的旁路读者：读接口全部来自内存聚合，不阻塞检查主链路；写操作只有两个且都留审计——审批决议、策略热更新。
+- API 均为 JSON（`/api/overview`、`/api/audit`、`/api/run`、`/api/approvals`、`/api/policy*`、`/api/playground`、`/api/export`），可以绕过内置页面直接对接客户自己的 SOC/运营平台。
 
 ## 集成指南
 
@@ -315,23 +348,26 @@ agent_guardrails/
 ├── policy.py            # 策略 schema + YAML/JSON 加载（启动时编译校验）
 ├── types.py             # Stage/Action/ToolCall/RunContext/Verdict/异常
 ├── approval.py          # 审批网关：Memory / Callback，幂等指纹
-├── audit.py             # JSONL 审计 + 内存尾部
-└── checkers/
-    ├── base.py          # Checker 协议
-    ├── tool_policy.py   # 白名单/黑名单/参数规则
-    ├── budget.py        # 运行预算
-    ├── injection.py     # 注入启发式（中英文 + 零宽字符）
-    └── pii.py           # PII 脱敏 + 输出硬拦截
-examples/                # 注释版策略 + 可运行 demo
-tests/                   # 44 个单元测试
+├── audit.py             # JSONL 审计 + 内存聚合（计数器/时间线/过滤追尾）
+├── checkers/
+│   ├── base.py          # Checker 协议
+│   ├── tool_policy.py   # 白名单/黑名单/参数规则
+│   ├── budget.py        # 运行预算
+│   ├── injection.py     # 注入启发式（中英文 + 零宽字符）
+│   └── pii.py           # PII 脱敏 + 输出硬拦截
+└── console/
+    ├── server.py        # 标准库 HTTP 服务：只读聚合 API + 审批/策略两个写口
+    └── static/index.html# 自包含单页控制台（离线可用，明暗主题）
+examples/                # 注释版策略 + 命令行 demo + 控制台 demo
+tests/                   # 52 个单元测试
 ```
 
 ## 开发与测试
 
 ```bash
 uv venv && uv pip install -e ".[dev]"
-.venv/bin/pytest -q          # 44 passed
-.venv/bin/python examples/demo.py
+.venv/bin/pytest -q          # 52 passed
+.venv/bin/python examples/console_demo.py
 ```
 
 CI（GitHub Actions）在 Python 3.10 / 3.12 上跑全量测试。
@@ -342,4 +378,4 @@ CI（GitHub Actions）在 Python 3.10 / 3.12 上跑全量测试。
 - 审批网关持久化（数据库/消息队列）与 Webhook/IM 通知
 - 预算状态外置（Redis），支持多副本部署
 - Go 版引擎，对齐同一策略文件与审计格式（适配 eino 等 Go agent 运行时）
-- 策略热更新与按租户下发、命中统计面板
+- 策略按租户下发与版本管理、检测效果评测报告

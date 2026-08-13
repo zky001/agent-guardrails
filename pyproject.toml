@@ -1,6 +1,6 @@
 [project]
 name = "agent-guardrails"
-version = "0.1.0"
+version = "0.2.0"
 description = "Runtime guardrails for LLM agents: tool-call policy engine, budgets, approvals, and audit logging"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,6 +16,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["agent_guardrails*"]
+
+[tool.setuptools.package-data]
+"agent_guardrails.console" = ["static/*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

@@ -52,6 +52,18 @@ class ArgRule:
             max_length=int(d["max_length"]) if d.get("max_length") is not None else None,
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        if self.must_match:
+            out["must_match"] = self.must_match.pattern
+        if self.deny_match:
+            out["deny_match"] = self.deny_match.pattern
+        if self.allowed_domains:
+            out["allowed_domains"] = self.allowed_domains
+        if self.max_length is not None:
+            out["max_length"] = self.max_length
+        return out
+
 
 @dataclass
 class ToolRule:
@@ -71,6 +83,12 @@ class ToolRule:
             raise PolicyError(f"tools.rules[{tool}].action must be one of {sorted(_ACTIONS)}")
         args = [ArgRule.from_dict(tool, arg, spec) for arg, spec in (d.get("args") or {}).items()]
         return cls(tool=tool, action=action, args=args)
+
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {"tool": self.tool, "action": self.action}
+        if self.args:
+            out["args"] = {spec.arg: spec.to_dict() for spec in self.args}
+        return out
 
 
 @dataclass
@@ -92,6 +110,14 @@ class ToolPolicy:
             rules=[ToolRule.from_dict(r) for r in d.get("rules", [])],
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "default": self.default,
+            "allow": self.allow,
+            "deny": self.deny,
+            "rules": [r.to_dict() for r in self.rules],
+        }
+
 
 @dataclass
 class Budgets:
@@ -106,6 +132,12 @@ class Budgets:
             ),
             max_calls_per_tool={str(k): int(v) for k, v in (d.get("max_calls_per_tool") or {}).items()},
         )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "max_tool_calls_per_run": self.max_tool_calls_per_run,
+            "max_calls_per_tool": self.max_calls_per_tool,
+        }
 
 
 @dataclass
@@ -127,6 +159,13 @@ class ScanPolicy:
             extra_patterns=[_compile(p, f"{section}.extra_patterns") for p in d.get("extra_patterns", [])],
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "injection_detection": self.injection_detection,
+            "mode": self.mode,
+            "extra_patterns": [p.pattern for p in self.extra_patterns],
+        }
+
 
 @dataclass
 class OutputPolicy:
@@ -140,6 +179,12 @@ class OutputPolicy:
             deny_match=[_compile(p, "output.deny_match") for p in d.get("deny_match", [])],
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "pii_redaction": self.pii_redaction,
+            "deny_match": [p.pattern for p in self.deny_match],
+        }
+
 
 @dataclass
 class AuditPolicy:
@@ -148,6 +193,9 @@ class AuditPolicy:
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "AuditPolicy":
         return cls(path=str(d["path"]) if d.get("path") else None)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"path": self.path}
 
 
 @dataclass
@@ -176,6 +224,19 @@ class Policy:
             output=OutputPolicy.from_dict(d.get("output") or {}),
             audit=AuditPolicy.from_dict(d.get("audit") or {}),
         )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Plain-data form (regexes as pattern strings); round-trips through
+        ``Policy.from_dict``. Used by the console for display and editing."""
+        return {
+            "fail_mode": self.fail_mode,
+            "tools": self.tools.to_dict(),
+            "budgets": self.budgets.to_dict(),
+            "input": self.input.to_dict(),
+            "tool_result": self.tool_result.to_dict(),
+            "output": self.output.to_dict(),
+            "audit": self.audit.to_dict(),
+        }
 
 
 def load_policy(path: str | Path) -> Policy:

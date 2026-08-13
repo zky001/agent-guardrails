@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -41,6 +42,20 @@ class ApprovalRequest:
     args: dict[str, Any]
     reason: str
     status: str = PENDING
+    created_at: float = field(default_factory=time.time)
+    resolved_at: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "approval_id": self.approval_id,
+            "run_id": self.run_id,
+            "tool": self.tool,
+            "args": self.args,
+            "reason": self.reason,
+            "status": self.status,
+            "created_at": self.created_at,
+            "resolved_at": self.resolved_at,
+        }
 
 
 class ApprovalGate(ABC):
@@ -72,10 +87,17 @@ class MemoryApprovalGate(ApprovalGate):
             if req is None:
                 raise KeyError(f"unknown approval id: {approval_id}")
             req.status = APPROVED if approved else DENIED
+            req.resolved_at = time.time()
 
     def pending(self) -> list[ApprovalRequest]:
         with self._lock:
             return [r for r in self._requests.values() if r.status == PENDING]
+
+    def history(self) -> list[ApprovalRequest]:
+        """Resolved requests, most recently resolved first."""
+        with self._lock:
+            done = [r for r in self._requests.values() if r.status != PENDING]
+            return sorted(done, key=lambda r: r.resolved_at or 0, reverse=True)
 
     def clear_run(self, run_id: str) -> None:
         with self._lock:

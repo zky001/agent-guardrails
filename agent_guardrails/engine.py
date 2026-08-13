@@ -63,6 +63,23 @@ class GuardrailEngine:
         """Append a custom checker to the chain (runs after the defaults)."""
         self._checkers.append(checker)
 
+    @property
+    def checkers(self) -> tuple[Checker, ...]:
+        """The active checker chain (read-only view)."""
+        return tuple(self._checkers)
+
+    def apply_policy(self, policy: Policy, actor: str = "api") -> None:
+        """Hot-swap the active policy. Checkers read ``engine.policy`` on every
+        check, so the swap takes effect immediately; per-run budgets and pending
+        approvals are left untouched. The change itself is audited."""
+        self.policy = policy
+        self.audit.log(
+            stage="policy",
+            action="policy_update",
+            checker="console",
+            reason=f"policy replaced by {actor} (tools.default={policy.tools.default}, fail_mode={policy.fail_mode})",
+        )
+
     # ---------- budgets ----------
 
     def budget_usage(self, run_id: str, tool: str) -> tuple[int, int]:
@@ -75,6 +92,12 @@ class GuardrailEngine:
             b = self._budgets.setdefault(run_id, _RunBudget())
             b.total += 1
             b.per_tool[tool] += 1
+
+    @property
+    def active_runs(self) -> int:
+        """Number of runs with budget state (started but not reset)."""
+        with self._budget_lock:
+            return len(self._budgets)
 
     def reset_run(self, run_id: str) -> None:
         """Free per-run state once an agent run finishes."""
