@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" font-family="ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+
+  <!-- direction captions -->
+  <text x="490" y="88" text-anchor="middle" font-size="12" fill="#94a3b8">——  请求 / 执行方向  ——</text>
+  <text x="490" y="474" text-anchor="middle" font-size="12" fill="#94a3b8">——  返回 / 回复方向  ——</text>
+
+  <!-- tall actor boxes -->
+  <rect x="30" y="110" width="110" height="340" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="85" y="272" text-anchor="middle" font-size="17" font-weight="bold" fill="#0f172a">用户</text>
+  <text x="85" y="298" text-anchor="middle" font-size="12" fill="#475569">提问 · 收回复</text>
+
+  <rect x="435" y="110" width="110" height="340" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="490" y="262" text-anchor="middle" font-size="17" font-weight="bold" fill="#1d4ed8">LLM</text>
+  <text x="490" y="288" text-anchor="middle" font-size="12" fill="#334155">Agent 决策</text>
+  <text x="490" y="308" text-anchor="middle" font-size="12" fill="#334155">循环调用工具</text>
+
+  <rect x="840" y="110" width="110" height="340" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="895" y="262" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">工具执行</text>
+  <text x="895" y="288" text-anchor="middle" font-size="11.5" fill="#475569">检索 · SQL · 爬虫</text>
+  <text x="895" y="308" text-anchor="middle" font-size="11.5" fill="#475569">邮件 · 代码 …</text>
+
+  <!-- guardrail boxes -->
+  <rect x="195" y="105" width="180" height="110" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+  <text x="285" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">① INPUT 围栏</text>
+  <text x="285" y="164" text-anchor="middle" font-size="12" fill="#92400e">提示注入 · 越狱检测</text>
+  <text x="285" y="186" text-anchor="middle" font-size="12" fill="#92400e">默认 deny</text>
+
+  <rect x="605" y="105" width="180" height="110" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+  <text x="695" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">② TOOL_CALL 围栏</text>
+  <text x="695" y="164" text-anchor="middle" font-size="12" fill="#92400e">白名单 · 参数规则</text>
+  <text x="695" y="186" text-anchor="middle" font-size="12" fill="#92400e">预算 · 人工审批</text>
+
+  <rect x="605" y="345" width="180" height="110" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+  <text x="695" y="378" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">③ TOOL_RESULT 围栏</text>
+  <text x="695" y="404" text-anchor="middle" font-size="12" fill="#92400e">返回内容注入扫描</text>
+  <text x="695" y="426" text-anchor="middle" font-size="12" fill="#92400e">默认 flag 标记</text>
+
+  <rect x="195" y="345" width="180" height="110" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+  <text x="285" y="378" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">④ OUTPUT 围栏</text>
+  <text x="285" y="404" text-anchor="middle" font-size="12" fill="#92400e">PII 脱敏</text>
+  <text x="285" y="426" text-anchor="middle" font-size="12" fill="#92400e">敏感格式拦截</text>
+
+  <!-- request flow (left to right, y=160) -->
+  <line x1="140" y1="160" x2="190" y2="160" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="375" y1="160" x2="430" y2="160" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="545" y1="160" x2="600" y2="160" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="785" y1="160" x2="835" y2="160" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- return flow (right to left, y=400) -->
+  <line x1="840" y1="400" x2="790" y2="400" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="605" y1="400" x2="550" y2="400" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="435" y1="400" x2="380" y2="400" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="195" y1="400" x2="145" y2="400" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- budget & audit band -->
+  <line x1="285" y1="455" x2="285" y2="488" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="695" y1="455" x2="695" y2="488" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <rect x="195" y="488" width="590" height="52" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="490" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#047857">⑤ 运行预算 与 全程审计</text>
+  <text x="490" y="530" text-anchor="middle" font-size="11.5" fill="#065f46">贯穿全部拦截面 · 每个决策（含放行）写入 JSONL</text>
+</svg>

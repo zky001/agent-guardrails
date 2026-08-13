@@ -49,15 +49,7 @@ Agent 与聊天机器人的本质区别在于它**会做事**：调工具、查�
 
 ## 架构：五个拦截面
 
-```
-用户输入 ──▶ [① INPUT 围栏] ──▶ LLM ──▶ 工具调用意图 ──▶ [② TOOL_CALL 围栏] ──▶ 工具执行
-   注入/越狱检测                              白名单/参数校验/预算/审批             │
-                                                                                  ▼
-最终回复 ◀── [④ OUTPUT 围栏] ◀── LLM ◀── [③ TOOL_RESULT 围栏] ◀─────────── 工具返回
-   PII脱敏/敏感拦截                           返回内容注入扫描(不可信输入)
-
-                    [⑤ 运行预算 + 全程审计：贯穿所有阶段]
-```
+![五个拦截面架构图](docs/architecture.svg)
 
 | 拦截面 | 阶段 | 默认行为 |
 |---|---|---|
@@ -207,16 +199,7 @@ python examples/demo.py
 
 ## 人工审批流
 
-```
-agent 调用 email_0 ──▶ TOOL_CALL 围栏 ──▶ require_approval
-                                             │  gate.request() 幂等登记
-                                             ▼
-                                     ApprovalRequired 异常 (approval_id)
-                                             │  运行时挂起 / 转人工
-            审批人 gate.resolve(approval_id, True/False)
-                                             │
-agent 重放同一调用 ──▶ 指纹命中已决议记录 ──▶ 放行执行 / GuardrailDenied
-```
+![人工审批时序图](docs/approval-flow.svg)
 
 - **幂等指纹**：`sha256(run_id + 工具名 + 排序后参数)`，同一调用不会重复开审批单；参数变了视为新调用。
 - **`MemoryApprovalGate`**：内存队列，`pending()` 供轮询、`resolve()` 决议、`clear_run()` 随 `engine.reset_run()` 清理。适合单进程与演示；生产落库见 Roadmap。
