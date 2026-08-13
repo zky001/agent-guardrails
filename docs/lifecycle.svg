@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="2000" height="940" font-family="ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="960" y="30" text-anchor="end" font-size="12" fill="#0ca30c">✓ = 现有围栏模块已覆盖</text>
+
+  <!-- Stage 1: 开发 -->
+  <rect x="40" y="50" width="210" height="280" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="40" y="50" width="210" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="145" y="78" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">① 开发</text>
+  <text x="56" y="122" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 安全基线 · 策略即代码</text>
+  <text x="56" y="150" font-size="12.5" fill="#0f172a">Agent 注册与权限申请</text>
+  <text x="56" y="178" font-size="12.5" fill="#0f172a">工具/数据访问最小化设计</text>
+  <text x="56" y="206" font-size="12.5" fill="#0f172a">依赖与供应链检查</text>
+  <text x="56" y="234" font-size="12.5" fill="#0f172a">上线前红队与安全评测</text>
+
+  <!-- Stage 2: 上线 -->
+  <rect x="290" y="50" width="210" height="280" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="290" y="50" width="210" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="395" y="78" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">② 上线</text>
+  <text x="306" y="122" font-size="12.5" fill="#0f172a">准入门禁：评测通过才放行</text>
+  <text x="306" y="150" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 策略校验与定版下发</text>
+  <text x="306" y="178" font-size="12.5" fill="#0f172a">权限授予（最小权限）</text>
+  <text x="306" y="206" font-size="12.5" fill="#0f172a">灰度发布与回滚预案</text>
+  <text x="306" y="234" font-size="12.5" fill="#0f172a">责任人与用途登记</text>
+
+  <!-- Stage 3: 运行 (highlighted) -->
+  <rect x="540" y="50" width="210" height="280" rx="10" fill="#fffbf5" stroke="#f59e0b" stroke-width="2.5"/>
+  <rect x="540" y="50" width="210" height="44" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2.5"/>
+  <text x="645" y="78" text-anchor="middle" font-size="16" font-weight="bold" fill="#b45309">③ 运行（当前主战场）</text>
+  <text x="556" y="122" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 五拦截面实时围栏</text>
+  <text x="556" y="150" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 权限白名单与参数管控</text>
+  <text x="556" y="178" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 高危操作人工审批</text>
+  <text x="556" y="206" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 预算限额 · 失控保护</text>
+  <text x="556" y="234" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 实时大盘与全程审计</text>
+  <text x="556" y="262" font-size="12.5" fill="#0f172a">告警与事件响应（建设中）</text>
+
+  <!-- Stage 4: 下线 -->
+  <rect x="790" y="50" width="170" height="280" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="790" y="50" width="170" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="875" y="78" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">④ 下线</text>
+  <text x="804" y="122" font-size="12.5" fill="#0f172a">权限与凭证回收</text>
+  <text x="804" y="150" font-size="12.5" fill="#0f172a"><tspan fill="#0ca30c" font-weight="bold">✓</tspan> 审计归档（JSONL）</text>
+  <text x="804" y="178" font-size="12.5" fill="#0f172a">数据清理与验证</text>
+  <text x="804" y="206" font-size="12.5" fill="#0f172a">注销登记 · 复盘</text>
+
+  <!-- arrows between stages -->
+  <line x1="250" y1="190" x2="285" y2="190" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="190" x2="535" y2="190" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="750" y1="190" x2="785" y2="190" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- cross-cutting band -->
+  <line x1="145" y1="330" x2="145" y2="368" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="395" y1="330" x2="395" y2="368" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="645" y1="330" x2="645" y2="368" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="875" y1="330" x2="875" y2="368" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <rect x="40" y="368" width="920" height="62" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="500" y="394" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#047857">贯穿全程：Agent 身份与权限体系 · 统一策略中心 · 全程审计与可追责</text>
+  <text x="500" y="416" text-anchor="middle" font-size="12" fill="#065f46">每个 Agent 有身份、有属主、有权限边界；策略按租户/部门下发；所有决策可回放、可举证</text>
+</svg>
