@@ -1,0 +1,55 @@
+# agent-guardrails 策略示例 / example policy
+# 决策动作: allow(放行) | deny(拦截) | require_approval(挂起等人工审批)
+# fail_mode: 检查器自身异常时的行为 —— closed(熔断拦截, 金融/高危场景) | open(放行并记录)
+fail_mode: closed
+
+tools:
+  # 未命中任何规则时的默认动作。对客户交付建议 deny(白名单制)。
+  default: deny
+  # 白名单: 支持 fnmatch 通配符, 可覆盖运行时的带索引注册名 (如 web_search_0)
+  allow:
+    - "retrieval*"
+    - "web_search*"
+    - "wikipedia*"
+  # 黑名单: 永远拦截, 优先级最高
+  deny:
+    - "shell*"
+  # 细粒度规则: 参数校验 + 按工具指定动作
+  rules:
+    - tool: "exec_sql*"
+      action: allow
+      args:
+        sql:
+          must_match: "(?i)^\\s*select\\b"          # 只允许 SELECT
+          deny_match: "(?i)\\b(drop|delete|update|insert|alter|truncate)\\b"
+          max_length: 4000
+    - tool: "crawler*"
+      action: allow
+      args:
+        url:
+          allowed_domains: ["example.com", "arxiv.org"]
+    - tool: "email*"                                 # 外发动作 → 人工审批
+      action: require_approval
+    - tool: "code_exec*"
+      action: require_approval
+
+budgets:
+  max_tool_calls_per_run: 20      # 单次运行总调用上限, 防失控循环
+  max_calls_per_tool:
+    web_search_0: 5
+
+input:                             # 用户输入围栏
+  injection_detection: true
+  mode: deny                       # deny | flag
+  extra_patterns: []               # 客户可自行追加正则
+
+tool_result:                       # 工具返回内容围栏 (网页/文档属不可信输入)
+  injection_detection: true
+  mode: flag                       # 默认只标记+审计, 不阻断正常内容
+
+output:                            # 最终输出围栏
+  pii_redaction: true              # 邮箱/手机号/身份证/卡号脱敏
+  deny_match: []                   # 例如密钥格式: "sk-[A-Za-z0-9]{20,}"
+
+audit:
+  path: guardrail_audit.jsonl      # 结构化审计日志 (JSONL)
